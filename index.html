@@ -1,195 +1,216 @@
-<script>
-  // Função para carregar os relatos do localStorage
-  function carregarRelatos() {
-    const relatosSalvos = JSON.parse(localStorage.getItem('relatos')) || [];
-    const relatosDiv = document.getElementById('relatos');
-    relatosDiv.innerHTML = ''; // Limpa os relatos existentes na página
-    relatosSalvos.forEach((relato) => {
-      const relatoDiv = criarRelatoDiv(relato);
-      relatosDiv.appendChild(relatoDiv);
-    });
-  }
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EscolaRelatosX</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap" rel="stylesheet">
+  <style>
+    /* Estilos conforme o código original... */
+  </style>
+</head>
+<body>
+  <header>
+    <h1>EscolaRelatosX</h1>
+    <p>Compartilhe suas experiências e ajude a melhorar nossa escola!</p>
+    <img src="https://i.ibb.co/rKkmQP5N/Picsart-25-03-24-02-58-36-595.jpg" alt="Escola Relatos Logo"/>
+  </header>
 
-  // Função para salvar os relatos no localStorage
-  function salvarRelatos(relatos) {
-    localStorage.setItem('relatos', JSON.stringify(relatos));
-  }
+  <main>
+    <!-- Seção de Envio de Relatos -->
+    <section>
+      <h2>Envie seu relato</h2>
+      <form id="relatoForm">
+        <label for="nome">Seu nome:</label>
+        <input type="text" id="nome" name="nome" required>
 
-  // Função para criar a estrutura HTML de um relato
-  function criarRelatoDiv(relato) {
-    const relatoDiv = document.createElement('div');
-    relatoDiv.className = 'relato';
+        <label for="turma">Turma ou série:</label>
+        <input type="text" id="turma" name="turma" required>
 
-    // Nome e turma
-    const autor = document.createElement('p');
-    autor.textContent = `${relato.nome} - ${relato.turma}`;
-    relatoDiv.appendChild(autor);
+        <label for="foto">Envie uma foto ou vídeo (opcional):</label>
+        <input type="file" id="foto" name="foto" accept="image/*,video/*">
 
-    // Relato
-    const texto = document.createElement('p');
-    texto.textContent = relato.texto;
-    relatoDiv.appendChild(texto);
+        <label for="relato">Seu relato:</label>
+        <textarea id="relato" name="relato" rows="5" required></textarea>
 
-    // Foto ou vídeo (se houver)
-    if (relato.foto) {
-      if (relato.foto.type.startsWith('image/')) {
-        const img = document.createElement('img');
-        img.src = URL.createObjectURL(relato.foto);
-        relatoDiv.appendChild(img);
-      } else if (relato.foto.type.startsWith('video/')) {
-        const video = document.createElement('video');
-        video.src = URL.createObjectURL(relato.foto);
-        video.controls = true;
-        relatoDiv.appendChild(video);
+        <button type="submit">Enviar</button>
+      </form>
+    </section>
+
+    <!-- Galeria de Relatos -->
+    <section>
+      <h2>Relatos Publicados</h2>
+      <div id="relatos">
+        <!-- Relatos serão adicionados aqui dinamicamente -->
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2023 EscolaRelatosX. Todos os direitos reservados.</p>
+  </footer>
+
+  <!-- Pop-up de senha -->
+  <div id="passwordModal">
+    <div id="passwordModalContent">
+      <h2>Digite a senha para acessar o site</h2>
+      <input type="password" id="passwordInput" placeholder="Senha" />
+      <button id="passwordSubmit">Entrar</button>
+    </div>
+  </div>
+
+  <script>
+    // Carregar relatos salvos do localStorage
+    window.onload = function() {
+      document.getElementById('passwordModal').style.display = 'flex';
+
+      // Carregar relatos persistidos
+      const savedRelatos = JSON.parse(localStorage.getItem('relatos')) || [];
+      savedRelatos.forEach(function(relato) {
+        addRelatoToGallery(relato);
+      });
+    };
+
+    // Função para adicionar relato à galeria
+    function addRelatoToGallery(relato) {
+      const relatosDiv = document.getElementById('relatos');
+      const relatoDiv = document.createElement('div');
+      relatoDiv.className = 'relato';
+
+      // Nome e turma
+      const autor = document.createElement('p');
+      autor.textContent = `${relato.nome} - ${relato.turma}`;
+      relatoDiv.appendChild(autor);
+
+      // Relato
+      const texto = document.createElement('p');
+      texto.textContent = relato.texto;
+      relatoDiv.appendChild(texto);
+
+      // Foto ou vídeo (se houver)
+      if (relato.foto) {
+        const mediaElement = document.createElement(relato.foto.type.startsWith('image/') ? 'img' : 'video');
+        mediaElement.src = relato.foto.url;
+        if (relato.foto.type.startsWith('video/')) {
+          mediaElement.controls = true;
+        }
+        relatoDiv.appendChild(mediaElement);
       }
-    }
 
-    // Botão de curtir (alternável)
-    const likeBtn = document.createElement('button');
-    likeBtn.className = 'like-btn';
-    likeBtn.textContent = 'Curtir';
-    let liked = relato.liked || false;
-    let likeCount = relato.likeCount || 0;
-    likeBtn.addEventListener('click', function () {
-      liked = !liked;
+      // Botão de curtir
+      const likeBtn = document.createElement('button');
+      likeBtn.className = 'like-btn';
+      likeBtn.textContent = 'Curtir';
+      let liked = relato.liked || false;
+      let likeCount = relato.likeCount || 0;
       likeBtn.classList.toggle('liked', liked);
-      likeCount = liked ? likeCount + 1 : likeCount - 1;
+      likeBtn.addEventListener('click', function () {
+        liked = !liked;
+        likeBtn.classList.toggle('liked', liked);
+        likeCount = liked ? likeCount + 1 : likeCount - 1;
+        likeCountSpan.textContent = likeCount;
+        relato.liked = liked;
+        relato.likeCount = likeCount;
+        updateLocalStorage();
+      });
+      relatoDiv.appendChild(likeBtn);
+
+      // Contador de curtidas
+      const likeCountSpan = document.createElement('span');
+      likeCountSpan.className = 'like-count';
       likeCountSpan.textContent = likeCount;
-      relato.liked = liked;
-      relato.likeCount = likeCount;
-      salvarRelatos(relatos);
-    });
-    relatoDiv.appendChild(likeBtn);
+      relatoDiv.appendChild(likeCountSpan);
 
-    // Contador de curtidas
-    const likeCountSpan = document.createElement('span');
-    likeCountSpan.className = 'like-count';
-    likeCountSpan.textContent = likeCount;
-    relatoDiv.appendChild(likeCountSpan);
+      // Formulário de resposta
+      const replyForm = document.createElement('form');
+      replyForm.className = 'reply-form';
+      const replyInput = document.createElement('textarea');
+      replyInput.placeholder = 'Deixe uma resposta...';
+      replyInput.rows = 2;
+      replyForm.appendChild(replyInput);
+      const replyBtn = document.createElement('button');
+      replyBtn.type = 'submit';
+      replyBtn.textContent = 'Responder';
+      replyForm.appendChild(replyBtn);
+      replyForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const replyText = replyInput.value;
+        if (replyText) {
+          const replyDiv = document.createElement('div');
+          replyDiv.className = 'comment';
+          replyDiv.innerHTML = `<p>${replyText}</p>`;
+          relatoDiv.appendChild(replyDiv);
+          replyInput.value = '';
 
-    // Formulário de resposta
-    const replyForm = document.createElement('form');
-    replyForm.className = 'reply-form';
-    const replyInput = document.createElement('textarea');
-    replyInput.placeholder = 'Deixe uma resposta...';
-    replyInput.rows = 2;
-    replyForm.appendChild(replyInput);
-    const replyBtn = document.createElement('button');
-    replyBtn.type = 'submit';
-    replyBtn.textContent = 'Responder';
-    replyForm.appendChild(replyBtn);
-    replyForm.addEventListener('submit', function (e) {
+          // Adiciona a resposta ao relato
+          relato.respostas.push(replyText);
+          updateLocalStorage();
+        }
+      });
+      relatoDiv.appendChild(replyForm);
+
+      // Adiciona o relato à galeria
+      relatosDiv.appendChild(relatoDiv);
+    }
+
+    // Função para atualizar o localStorage com os relatos atuais
+    function updateLocalStorage() {
+      const allRelatos = [];
+      document.querySelectorAll('.relato').forEach(function(relatoDiv) {
+        const relato = {
+          nome: relatoDiv.querySelector('p').textContent.split(' - ')[0],
+          turma: relatoDiv.querySelector('p').textContent.split(' - ')[1],
+          texto: relatoDiv.querySelector('p:nth-child(2)').textContent,
+          foto: relatoDiv.querySelector('img, video') ? {
+            type: relatoDiv.querySelector('img, video').tagName.toLowerCase() === 'img' ? 'image' : 'video',
+            url: relatoDiv.querySelector('img, video').src
+          } : null,
+          liked: relatoDiv.querySelector('.like-btn').classList.contains('liked'),
+          likeCount: parseInt(relatoDiv.querySelector('.like-count').textContent),
+          respostas: Array.from(relatoDiv.querySelectorAll('.comment p')).map(p => p.textContent)
+        };
+        allRelatos.push(relato);
+      });
+      localStorage.setItem('relatos', JSON.stringify(allRelatos));
+    }
+
+    // Enviar relato
+    document.getElementById('relatoForm').addEventListener('submit', function (e) {
       e.preventDefault();
-      const replyText = replyInput.value;
-      if (replyText) {
-        const replyDiv = document.createElement('div');
-        replyDiv.className = 'comment';
-        const replyIndicator = document.createElement('div');
-        replyIndicator.className = 'reply-indicator';
-        replyIndicator.textContent = `${relato.nome} > ${autor.textContent}`;
-        replyDiv.appendChild(replyIndicator);
-        replyDiv.innerHTML += `<p>${replyText}</p>`;
 
-        // Adicionar botão de curtir nas respostas
-        const replyLikeBtn = document.createElement('button');
-        replyLikeBtn.className = 'like-btn';
-        replyLikeBtn.textContent = 'Curtir';
-        let replyLiked = false;
-        let replyLikeCount = 0;
-        replyLikeBtn.addEventListener('click', function () {
-          replyLiked = !replyLiked;
-          replyLikeBtn.classList.toggle('liked', replyLiked);
-          replyLikeCount = replyLiked ? replyLikeCount + 1 : replyLikeCount - 1;
-          replyLikeCountSpan.textContent = replyLikeCount;
-        });
-        replyDiv.appendChild(replyLikeBtn);
+      const nome = document.getElementById('nome').value;
+      const turma = document.getElementById('turma').value;
+      const relato = document.getElementById('relato').value;
+      const foto = document.getElementById('foto').files[0];
 
-        const replyLikeCountSpan = document.createElement('span');
-        replyLikeCountSpan.className = 'like-count';
-        replyLikeCountSpan.textContent = replyLikeCount;
-        replyDiv.appendChild(replyLikeCountSpan);
+      if (nome && turma && relato) {
+        const newRelato = {
+          nome: nome,
+          turma: turma,
+          texto: relato,
+          foto: foto ? { type: foto.type, url: URL.createObjectURL(foto) } : null,
+          liked: false,
+          likeCount: 0,
+          respostas: []
+        };
 
-        // Formulário de resposta para a resposta
-        const nestedReplyForm = document.createElement('form');
-        nestedReplyForm.className = 'reply-form';
-        const nestedReplyInput = document.createElement('textarea');
-        nestedReplyInput.placeholder = 'Responda à resposta...';
-        nestedReplyInput.rows = 2;
-        nestedReplyForm.appendChild(nestedReplyInput);
-        const nestedReplyBtn = document.createElement('button');
-        nestedReplyBtn.type = 'submit';
-        nestedReplyBtn.textContent = 'Responder';
-        nestedReplyForm.appendChild(nestedReplyBtn);
-        nestedReplyForm.addEventListener('submit', function (e) {
-          e.preventDefault();
-          const nestedReplyText = nestedReplyInput.value;
-          if (nestedReplyText) {
-            const nestedReplyDiv = document.createElement('div');
-            nestedReplyDiv.className = 'comment';
-            nestedReplyDiv.innerHTML = `<p>${nestedReplyText}</p>`;
-            replyDiv.appendChild(nestedReplyDiv);
-            nestedReplyInput.value = '';
-          }
-        });
-        replyDiv.appendChild(nestedReplyForm);
-
-        relatoDiv.appendChild(replyDiv);
-
-        // Adiciona a resposta ao relato
-        relato.respostas = relato.respostas || [];
-        relato.respostas.push({ texto: replyText });
-        salvarRelatos(relatos);
-        replyInput.value = '';
+        // Adicionar relato à galeria e atualizar o localStorage
+        addRelatoToGallery(newRelato);
+        updateLocalStorage();
+        alert('Relato enviado com sucesso!');
+        document.getElementById('relatoForm').reset();
       }
     });
-    relatoDiv.appendChild(replyForm);
 
-    return relatoDiv;
-  }
-
-  // Função para adicionar relato e salvar no localStorage
-  document.getElementById('relatoForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const nome = document.getElementById('nome').value;
-    const turma = document.getElementById('turma').value;
-    const relato = document.getElementById('relato').value;
-    const foto = document.getElementById('foto').files[0];
-
-    if (nome && turma && relato) {
-      const relatos = JSON.parse(localStorage.getItem('relatos')) || [];
-      const novoRelato = {
-        nome: nome,
-        turma: turma,
-        texto: relato,
-        foto: foto,
-        liked: false,
-        likeCount: 0,
-        respostas: []
-      };
-
-      relatos.push(novoRelato);
-      salvarRelatos(relatos);
-      carregarRelatos(); // Atualiza a galeria de relatos
-
-      alert('Relato enviado com sucesso!');
-      document.getElementById('relatoForm').reset();
-    }
-  });
-
-  // Carregar os relatos quando a página for carregada
-  window.onload = function() {
-    carregarRelatos();
-    document.getElementById('passwordModal').style.display = 'flex';
-  };
-
-  // Verificar senha
-  document.getElementById('passwordSubmit').addEventListener('click', function() {
-    const password = document.getElementById('passwordInput').value;
-    if (password === 'Escola25') {
-      document.getElementById('passwordModal').style.display = 'none';
-    } else {
-      alert('Senha incorreta!');
-    }
-  });
-</script>
+    // Verificar senha
+    document.getElementById('passwordSubmit').addEventListener('click', function() {
+      const password = document.getElementById('passwordInput').value;
+      if (password === 'Escola25') {
+        document.getElementById('passwordModal').style.display = 'none';
+      } else {
+        alert('Senha incorreta!');
+      }
+    });
+  </script>
+</body>
+</html>
