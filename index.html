@@ -2,406 +2,53 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EscolaRelatosX</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f4;
-      color: #333333;
-    }
-    header {
-      background-color: #333333;
-      color: white;
-      padding: 20px;
-      text-align: center;
-      position: relative;
-    }
-    header img {
-      width: 80px;
-      height: 80px;
-      border-radius: 12px;
-      margin: 0 auto;
-    }
-    main {
-      padding: 20px;
-    }
-    section {
-      margin-bottom: 30px;
-    }
-    h2 {
-      color: #33CBB2;
-    }
-    form {
-      background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: bold;
-    }
-    input[type="text"], textarea, input[type="file"] {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    button {
-      background-color: #33CBB2;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #2aa895;
-    }
-    .relato, .comment {
-      background-color: white;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      margin-bottom: 15px;
-    }
-    .relato img, .relato video {
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px;
-      margin-top: 10px;
-    }
-    .comment {
-      margin-left: 20px;
-      margin-top: 10px;
-    }
-    .comment .reply-form {
-      margin-top: 10px;
-    }
-    .like-btn {
-      background-color: #B239A3;
-      color: white;
-      padding: 5px 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-right: 10px;
-    }
-    .like-btn.liked {
-      background-color: #33CBB2;
-    }
-    .like-count {
-      font-weight: bold;
-      color: #333333;
-    }
-    .reply-indicator {
-      font-size: 0.9em;
-      color: #B239A3;
-      margin-bottom: 5px;
-    }
-    footer {
-      background-color: #333333;
-      color: white;
-      text-align: center;
-      padding: 10px;
-      position: relative;
-    }
-    footer p {
-      font-size: 12px;
-      margin: 0;
-    }
-    #passwordModal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      justify-content: center;
-      align-items: center;
-    }
-    #passwordModalContent {
-      background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-      text-align: center;
-      width: 300px;
-    }
-    #passwordModal button {
-      background-color: #33CBB2;
-      color: white;
-      padding: 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    #passwordModal button:hover {
-      background-color: #2aa895;
-    }
-  </style>
+  <title>EscolaRelatosX - Todos Veem</title>
+  <!-- (Mantenha o CSS original) -->
 </head>
 <body>
-  <header>
-    <h1>EscolaRelatosX</h1>
-    <p>Compartilhe suas experiências e ajude a melhorar nossa escola!</p>
-    <img src="https://i.ibb.co/rKkmQP5N/Picsart-25-03-24-02-58-36-595.jpg" alt="Escola Relatos Logo"/>
-  </header>
-
-  <main>
-    <section>
-      <h2>Envie seu relato</h2>
-      <form id="relatoForm">
-        <label for="nome">Seu nome:</label>
-        <input type="text" id="nome" name="nome" required>
-
-        <label for="turma">Turma ou série:</label>
-        <input type="text" id="turma" name="turma" required>
-
-        <label for="foto">Envie uma foto ou vídeo (opcional):</label>
-        <input type="file" id="foto" name="foto" accept="image/*,video/*">
-
-        <label for="relato">Seu relato:</label>
-        <textarea id="relato" name="relato" rows="5" required></textarea>
-
-        <button type="submit">Enviar</button>
-      </form>
-    </section>
-
-    <section>
-      <h2>Relatos Publicados</h2>
-      <div id="relatos">
-        <!-- Relatos serão carregados aqui -->
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <p>&copy; 2023 EscolaRelatosX. Todos os direitos reservados.</p>
-  </footer>
-
-  <div id="passwordModal">
-    <div id="passwordModalContent">
-      <h2>Digite a senha para acessar o site</h2>
-      <input type="password" id="passwordInput" placeholder="Senha" />
-      <button id="passwordSubmit">Entrar</button>
-    </div>
-  </div>
+  <!-- (Mantenha o HTML original) -->
 
   <script>
-    // Estrutura de dados para armazenar relatos
-    let relatosData = {
-      relatos: []
-    };
+    // Banco de dados FAKE usando GitHub Gist (sem configuração)
+    const GIST_ID = "gist:70b09108800cf7c758f4ff2f409ffd95"; // Substitua por um Gist ID válido
+    let relatos = [];
 
-    // Carregar dados do localStorage ao iniciar
-    function carregarDados() {
-      const dadosSalvos = localStorage.getItem('escolaRelatosData');
-      if (dadosSalvos) {
-        relatosData = JSON.parse(dadosSalvos);
-        renderizarRelatos();
+    // Carrega relatos de um Gist público
+    async function carregarRelatos() {
+      try {
+        const resposta = await fetch(`https://gist.githubusercontent.com/raw/${GIST_ID}/relatos.json`);
+        relatos = await resposta.json();
+        mostrarRelatos();
+      } catch {
+        relatos = [];
       }
     }
 
-    // Salvar dados no localStorage
-    function salvarDados() {
-      localStorage.setItem('escolaRelatosData', JSON.stringify(relatosData));
+    // Mostra relatos na tela
+    function mostrarRelatos() {
+      const divRelatos = document.getElementById('relatos');
+      divRelatos.innerHTML = relatos.map(relato => `
+        <div class="relato">
+          <p><strong>${relato.nome}</strong> - ${relato.turma}</p>
+          <p>${relato.texto}</p>
+          ${relato.midia ? `<img src="${relato.midia}" width="200">` : ''}
+        </div>
+      `).join('');
     }
 
-    // Renderizar todos os relatos
-    function renderizarRelatos() {
-      const relatosDiv = document.getElementById('relatos');
-      relatosDiv.innerHTML = '';
-
-      relatosData.relatos.forEach((relato, relatoIndex) => {
-        const relatoDiv = document.createElement('div');
-        relatoDiv.className = 'relato';
-        relatoDiv.dataset.index = relatoIndex;
-
-        // Autor e turma
-        const autor = document.createElement('p');
-        autor.textContent = `${relato.nome} - ${relato.turma}`;
-        relatoDiv.appendChild(autor);
-
-        // Texto do relato
-        const texto = document.createElement('p');
-        texto.textContent = relato.texto;
-        relatoDiv.appendChild(texto);
-
-        // Mídia (se houver)
-        if (relato.midia) {
-          if (relato.midia.startsWith('data:image')) {
-            const img = document.createElement('img');
-            img.src = relato.midia;
-            relatoDiv.appendChild(img);
-          } else if (relato.midia.startsWith('data:video')) {
-            const video = document.createElement('video');
-            video.src = relato.midia;
-            video.controls = true;
-            relatoDiv.appendChild(video);
-          }
-        }
-
-        // Curtidas
-        const likeBtn = document.createElement('button');
-        likeBtn.className = `like-btn ${relato.curtido ? 'liked' : ''}`;
-        likeBtn.textContent = 'Curtir';
-        likeBtn.addEventListener('click', () => {
-          relato.curtido = !relato.curtido;
-          relato.curtidas = relato.curtido ? relato.curtidas + 1 : relato.curtidas - 1;
-          salvarDados();
-          renderizarRelatos();
-        });
-        relatoDiv.appendChild(likeBtn);
-
-        const likeCountSpan = document.createElement('span');
-        likeCountSpan.className = 'like-count';
-        likeCountSpan.textContent = relato.curtidas;
-        relatoDiv.appendChild(likeCountSpan);
-
-        // Comentários
-        if (relato.comentarios && relato.comentarios.length > 0) {
-          relato.comentarios.forEach((comentario, comentarioIndex) => {
-            const commentDiv = document.createElement('div');
-            commentDiv.className = 'comment';
-
-            const replyIndicator = document.createElement('div');
-            replyIndicator.className = 'reply-indicator';
-            replyIndicator.textContent = `Resposta de ${comentario.nome}`;
-            commentDiv.appendChild(replyIndicator);
-
-            const commentText = document.createElement('p');
-            commentText.textContent = comentario.texto;
-            commentDiv.appendChild(commentText);
-
-            // Curtidas para comentários
-            const commentLikeBtn = document.createElement('button');
-            commentLikeBtn.className = `like-btn ${comentario.curtido ? 'liked' : ''}`;
-            commentLikeBtn.textContent = 'Curtir';
-            commentLikeBtn.addEventListener('click', () => {
-              relato.comentarios[comentarioIndex].curtido = !relato.comentarios[comentarioIndex].curtido;
-              relato.comentarios[comentarioIndex].curtidas = 
-                relato.comentarios[comentarioIndex].curtido ? 
-                relato.comentarios[comentarioIndex].curtidas + 1 : 
-                relato.comentarios[comentarioIndex].curtidas - 1;
-              salvarDados();
-              renderizarRelatos();
-            });
-            commentDiv.appendChild(commentLikeBtn);
-
-            const commentLikeCount = document.createElement('span');
-            commentLikeCount.className = 'like-count';
-            commentLikeCount.textContent = comentario.curtidas;
-            commentDiv.appendChild(commentLikeCount);
-
-            relatoDiv.appendChild(commentDiv);
-          });
-        }
-
-        // Formulário para novo comentário
-        const replyForm = document.createElement('form');
-        replyForm.className = 'reply-form';
-        
-        const replyInput = document.createElement('textarea');
-        replyInput.placeholder = 'Deixe uma resposta...';
-        replyInput.rows = 2;
-        replyInput.required = true;
-        replyForm.appendChild(replyInput);
-
-        const replyNomeInput = document.createElement('input');
-        replyNomeInput.type = 'text';
-        replyNomeInput.placeholder = 'Seu nome';
-        replyNomeInput.required = true;
-        replyForm.appendChild(replyNomeInput);
-
-        const replyBtn = document.createElement('button');
-        replyBtn.type = 'submit';
-        replyBtn.textContent = 'Responder';
-        replyForm.appendChild(replyBtn);
-
-        replyForm.addEventListener('submit', (e) => {
-          e.preventDefault();
-          const novoComentario = {
-            nome: replyNomeInput.value,
-            texto: replyInput.value,
-            curtido: false,
-            curtidas: 0
-          };
-
-          if (!relato.comentarios) {
-            relato.comentarios = [];
-          }
-          relato.comentarios.push(novoComentario);
-          salvarDados();
-          renderizarRelatos();
-        });
-
-        relatoDiv.appendChild(replyForm);
-        relatosDiv.appendChild(relatoDiv);
-      });
-    }
-
-    // Inicialização
-    document.addEventListener('DOMContentLoaded', () => {
-      carregarDados();
-      
-      // Pop-up de senha
-      document.getElementById('passwordModal').style.display = 'flex';
-      document.getElementById('passwordSubmit').addEventListener('click', function() {
-        const password = document.getElementById('passwordInput').value;
-        if (password === 'Escola25') {
-          document.getElementById('passwordModal').style.display = 'none';
-        } else {
-          alert('Senha incorreta!');
-        }
-      });
-
-      // Formulário de relato
-      document.getElementById('relatoForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const nome = document.getElementById('nome').value;
-        const turma = document.getElementById('turma').value;
-        const texto = document.getElementById('relato').value;
-        const foto = document.getElementById('foto').files[0];
-
-        if (nome && turma && texto) {
-          const novoRelato = {
-            nome,
-            turma,
-            texto,
-            curtido: false,
-            curtidas: 0,
-            comentarios: []
-          };
-
-          if (foto) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-              novoRelato.midia = e.target.result;
-              relatosData.relatos.unshift(novoRelato);
-              salvarDados();
-              renderizarRelatos();
-              document.getElementById('relatoForm').reset();
-              alert('Relato enviado com sucesso!');
-            };
-            reader.readAsDataURL(foto);
-          } else {
-            relatosData.relatos.unshift(novoRelato);
-            salvarDados();
-            renderizarRelatos();
-            document.getElementById('relatoForm').reset();
-            alert('Relato enviado com sucesso!');
-          }
-        }
-      });
+    // Envia relato (simulado)
+    document.getElementById('relatoForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      alert("Envie este código para o ADM para adicionar seu relato:\n\n" + 
+            JSON.stringify({
+              nome: document.getElementById('nome').value,
+              turma: document.getElementById('turma').value,
+              texto: document.getElementById('relato').value
+            }, null, 2));
     });
+
+    // Inicia
+    carregarRelatos();
   </script>
 </body>
 </html>
