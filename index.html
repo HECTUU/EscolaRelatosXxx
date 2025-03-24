@@ -23,8 +23,8 @@
     header img {
       width: 80px;
       height: 80px;
-      border-radius: 12px; /* Bordas arredondadas, mas quadrado */
-      margin: 0 auto; /* Centraliza a imagem */
+      border-radius: 12px;
+      margin: 0 auto;
     }
     main {
       padding: 20px;
@@ -116,8 +116,6 @@
       font-size: 12px;
       margin: 0;
     }
-
-    /* Estilo do Pop-up */
     #passwordModal {
       display: none;
       position: fixed;
@@ -157,7 +155,6 @@
   </header>
 
   <main>
-    <!-- Seção de Envio de Relatos -->
     <section>
       <h2>Envie seu relato</h2>
       <form id="relatoForm">
@@ -177,11 +174,10 @@
       </form>
     </section>
 
-    <!-- Galeria de Relatos -->
     <section>
       <h2>Relatos Publicados</h2>
       <div id="relatos">
-        <!-- Relatos serão adicionados aqui dinamicamente -->
+        <!-- Relatos serão carregados aqui -->
       </div>
     </section>
   </main>
@@ -190,7 +186,6 @@
     <p>&copy; 2023 EscolaRelatosX. Todos os direitos reservados.</p>
   </footer>
 
-  <!-- Pop-up de senha -->
   <div id="passwordModal">
     <div id="passwordModalContent">
       <h2>Digite a senha para acessar o site</h2>
@@ -200,153 +195,212 @@
   </div>
 
   <script>
-    // Exibir pop-up de senha
-    window.onload = function() {
-      // Recupera os relatos do localStorage
-      const storedRelatos = JSON.parse(localStorage.getItem('relatos')) || [];
-      const relatosDiv = document.getElementById('relatos');
-
-      // Preenche a galeria de relatos com os dados salvos
-      storedRelatos.forEach(relato => {
-        addRelatoToGallery(relato);
-      });
-
-      document.getElementById('passwordModal').style.display = 'flex';
+    // Estrutura de dados para armazenar relatos
+    let relatosData = {
+      relatos: []
     };
 
-    // Função para adicionar relatos à galeria
-    function addRelatoToGallery(relatoData) {
+    // Carregar dados do localStorage ao iniciar
+    function carregarDados() {
+      const dadosSalvos = localStorage.getItem('escolaRelatosData');
+      if (dadosSalvos) {
+        relatosData = JSON.parse(dadosSalvos);
+        renderizarRelatos();
+      }
+    }
+
+    // Salvar dados no localStorage
+    function salvarDados() {
+      localStorage.setItem('escolaRelatosData', JSON.stringify(relatosData));
+    }
+
+    // Renderizar todos os relatos
+    function renderizarRelatos() {
       const relatosDiv = document.getElementById('relatos');
-      const relatoDiv = document.createElement('div');
-      relatoDiv.className = 'relato';
+      relatosDiv.innerHTML = '';
 
-      // Nome e turma
-      const autor = document.createElement('p');
-      autor.textContent = `${relatoData.nome} - ${relatoData.turma}`;
-      relatoDiv.appendChild(autor);
+      relatosData.relatos.forEach((relato, relatoIndex) => {
+        const relatoDiv = document.createElement('div');
+        relatoDiv.className = 'relato';
+        relatoDiv.dataset.index = relatoIndex;
 
-      // Relato
-      const texto = document.createElement('p');
-      texto.textContent = relatoData.relato;
-      relatoDiv.appendChild(texto);
+        // Autor e turma
+        const autor = document.createElement('p');
+        autor.textContent = `${relato.nome} - ${relato.turma}`;
+        relatoDiv.appendChild(autor);
 
-      // Foto ou vídeo (se houver)
-      if (relatoData.foto) {
-        const mediaElement = document.createElement(relatoData.foto.type.startsWith('image/') ? 'img' : 'video');
-        mediaElement.src = relatoData.foto.url;
-        if (mediaElement.tagName === 'VIDEO') {
-          mediaElement.controls = true;
+        // Texto do relato
+        const texto = document.createElement('p');
+        texto.textContent = relato.texto;
+        relatoDiv.appendChild(texto);
+
+        // Mídia (se houver)
+        if (relato.midia) {
+          if (relato.midia.startsWith('data:image')) {
+            const img = document.createElement('img');
+            img.src = relato.midia;
+            relatoDiv.appendChild(img);
+          } else if (relato.midia.startsWith('data:video')) {
+            const video = document.createElement('video');
+            video.src = relato.midia;
+            video.controls = true;
+            relatoDiv.appendChild(video);
+          }
         }
-        relatoDiv.appendChild(mediaElement);
-      }
 
-      // Botão de curtir
-      const likeBtn = document.createElement('button');
-      likeBtn.className = 'like-btn';
-      likeBtn.textContent = 'Curtir';
-      let liked = relatoData.liked;
-      let likeCount = relatoData.likeCount;
-      likeBtn.addEventListener('click', function () {
-        liked = !liked;
-        likeBtn.classList.toggle('liked', liked);
-        likeCount = liked ? likeCount + 1 : likeCount - 1;
-        likeCountSpan.textContent = likeCount;
-        // Atualizar no localStorage
-        updateRelatoInStorage(relatoData.id, { liked, likeCount });
-      });
-      relatoDiv.appendChild(likeBtn);
+        // Curtidas
+        const likeBtn = document.createElement('button');
+        likeBtn.className = `like-btn ${relato.curtido ? 'liked' : ''}`;
+        likeBtn.textContent = 'Curtir';
+        likeBtn.addEventListener('click', () => {
+          relato.curtido = !relato.curtido;
+          relato.curtidas = relato.curtido ? relato.curtidas + 1 : relato.curtidas - 1;
+          salvarDados();
+          renderizarRelatos();
+        });
+        relatoDiv.appendChild(likeBtn);
 
-      // Contador de curtidas
-      const likeCountSpan = document.createElement('span');
-      likeCountSpan.className = 'like-count';
-      likeCountSpan.textContent = likeCount;
-      relatoDiv.appendChild(likeCountSpan);
+        const likeCountSpan = document.createElement('span');
+        likeCountSpan.className = 'like-count';
+        likeCountSpan.textContent = relato.curtidas;
+        relatoDiv.appendChild(likeCountSpan);
 
-      // Respostas
-      relatoData.respostas.forEach(resposta => {
-        const replyDiv = document.createElement('div');
-        replyDiv.className = 'comment';
-        const replyIndicator = document.createElement('div');
-        replyIndicator.className = 'reply-indicator';
-        replyIndicator.textContent = `${resposta.autor} > ${relatoData.nome} - ${relatoData.turma}`;
-        replyDiv.appendChild(replyIndicator);
-        replyDiv.innerHTML += `<p>${resposta.texto}</p>`;
-        replyDiv.appendChild(createLikeButton(resposta, relatoData.id));
-        relatoDiv.appendChild(replyDiv);
-      });
+        // Comentários
+        if (relato.comentarios && relato.comentarios.length > 0) {
+          relato.comentarios.forEach((comentario, comentarioIndex) => {
+            const commentDiv = document.createElement('div');
+            commentDiv.className = 'comment';
 
-      // Adicionar formulário de resposta
-      const replyForm = document.createElement('form');
-      replyForm.className = 'reply-form';
-      const replyInput = document.createElement('textarea');
-      replyInput.placeholder = 'Deixe uma resposta...';
-      replyInput.rows = 2;
-      replyForm.appendChild(replyInput);
-      const replyBtn = document.createElement('button');
-      replyBtn.type = 'submit';
-      replyBtn.textContent = 'Responder';
-      replyForm.appendChild(replyBtn);
+            const replyIndicator = document.createElement('div');
+            replyIndicator.className = 'reply-indicator';
+            replyIndicator.textContent = `Resposta de ${comentario.nome}`;
+            commentDiv.appendChild(replyIndicator);
 
-      replyForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        const replyText = replyInput.value;
-        if (replyText) {
-          const respostaData = {
-            autor: relatoData.nome,
-            texto: replyText,
-            likeCount: 0,
-            liked: false
+            const commentText = document.createElement('p');
+            commentText.textContent = comentario.texto;
+            commentDiv.appendChild(commentText);
+
+            // Curtidas para comentários
+            const commentLikeBtn = document.createElement('button');
+            commentLikeBtn.className = `like-btn ${comentario.curtido ? 'liked' : ''}`;
+            commentLikeBtn.textContent = 'Curtir';
+            commentLikeBtn.addEventListener('click', () => {
+              relato.comentarios[comentarioIndex].curtido = !relato.comentarios[comentarioIndex].curtido;
+              relato.comentarios[comentarioIndex].curtidas = 
+                relato.comentarios[comentarioIndex].curtido ? 
+                relato.comentarios[comentarioIndex].curtidas + 1 : 
+                relato.comentarios[comentarioIndex].curtidas - 1;
+              salvarDados();
+              renderizarRelatos();
+            });
+            commentDiv.appendChild(commentLikeBtn);
+
+            const commentLikeCount = document.createElement('span');
+            commentLikeCount.className = 'like-count';
+            commentLikeCount.textContent = comentario.curtidas;
+            commentDiv.appendChild(commentLikeCount);
+
+            relatoDiv.appendChild(commentDiv);
+          });
+        }
+
+        // Formulário para novo comentário
+        const replyForm = document.createElement('form');
+        replyForm.className = 'reply-form';
+        
+        const replyInput = document.createElement('textarea');
+        replyInput.placeholder = 'Deixe uma resposta...';
+        replyInput.rows = 2;
+        replyInput.required = true;
+        replyForm.appendChild(replyInput);
+
+        const replyNomeInput = document.createElement('input');
+        replyNomeInput.type = 'text';
+        replyNomeInput.placeholder = 'Seu nome';
+        replyNomeInput.required = true;
+        replyForm.appendChild(replyNomeInput);
+
+        const replyBtn = document.createElement('button');
+        replyBtn.type = 'submit';
+        replyBtn.textContent = 'Responder';
+        replyForm.appendChild(replyBtn);
+
+        replyForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const novoComentario = {
+            nome: replyNomeInput.value,
+            texto: replyInput.value,
+            curtido: false,
+            curtidas: 0
           };
-          relatoData.respostas.push(respostaData);
-          addRelatoToGallery(relatoData);
-          updateRelatoInStorage(relatoData.id, { respostas: relatoData.respostas });
-          replyInput.value = '';
+
+          if (!relato.comentarios) {
+            relato.comentarios = [];
+          }
+          relato.comentarios.push(novoComentario);
+          salvarDados();
+          renderizarRelatos();
+        });
+
+        relatoDiv.appendChild(replyForm);
+        relatosDiv.appendChild(relatoDiv);
+      });
+    }
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarDados();
+      
+      // Pop-up de senha
+      document.getElementById('passwordModal').style.display = 'flex';
+      document.getElementById('passwordSubmit').addEventListener('click', function() {
+        const password = document.getElementById('passwordInput').value;
+        if (password === 'Escola25') {
+          document.getElementById('passwordModal').style.display = 'none';
+        } else {
+          alert('Senha incorreta!');
         }
       });
 
-      relatoDiv.appendChild(replyForm);
-      relatosDiv.appendChild(relatoDiv);
-    }
+      // Formulário de relato
+      document.getElementById('relatoForm').addEventListener('submit', function(e) {
+        e.preventDefault();
 
-    // Função para atualizar o relato no localStorage
-    function updateRelatoInStorage(id, updateData) {
-      const storedRelatos = JSON.parse(localStorage.getItem('relatos')) || [];
-      const relatoIndex = storedRelatos.findIndex(relato => relato.id === id);
-      if (relatoIndex !== -1) {
-        storedRelatos[relatoIndex] = { ...storedRelatos[relatoIndex], ...updateData };
-        localStorage.setItem('relatos', JSON.stringify(storedRelatos));
-      }
-    }
+        const nome = document.getElementById('nome').value;
+        const turma = document.getElementById('turma').value;
+        const texto = document.getElementById('relato').value;
+        const foto = document.getElementById('foto').files[0];
 
-    // Envio de relatos
-    document.getElementById('relatoForm').addEventListener('submit', function (e) {
-      e.preventDefault();
+        if (nome && turma && texto) {
+          const novoRelato = {
+            nome,
+            turma,
+            texto,
+            curtido: false,
+            curtidas: 0,
+            comentarios: []
+          };
 
-      const nome = document.getElementById('nome').value;
-      const turma = document.getElementById('turma').value;
-      const relato = document.getElementById('relato').value;
-      const foto = document.getElementById('foto').files[0];
-
-      const relatoData = {
-        id: Date.now(),
-        nome,
-        turma,
-        relato,
-        foto: foto ? { url: URL.createObjectURL(foto), type: foto.type } : null,
-        likeCount: 0,
-        liked: false,
-        respostas: []
-      };
-
-      // Salvar no localStorage
-      const storedRelatos = JSON.parse(localStorage.getItem('relatos')) || [];
-      storedRelatos.push(relatoData);
-      localStorage.setItem('relatos', JSON.stringify(storedRelatos));
-
-      addRelatoToGallery(relatoData);
-
-      // Limpar o formulário
-      document.getElementById('relatoForm').reset();
+          if (foto) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              novoRelato.midia = e.target.result;
+              relatosData.relatos.unshift(novoRelato);
+              salvarDados();
+              renderizarRelatos();
+              document.getElementById('relatoForm').reset();
+              alert('Relato enviado com sucesso!');
+            };
+            reader.readAsDataURL(foto);
+          } else {
+            relatosData.relatos.unshift(novoRelato);
+            salvarDados();
+            renderizarRelatos();
+            document.getElementById('relatoForm').reset();
+            alert('Relato enviado com sucesso!');
+          }
+        }
+      });
     });
   </script>
 </body>
