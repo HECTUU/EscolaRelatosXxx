@@ -1,359 +1,244 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EscolaRelatosX</title>
-    <!-- Link para a fonte Roboto Black -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap" rel="stylesheet">
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" type="image/png">
+    <title>Rede Social</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Poppins', sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
             margin: 0;
             padding: 0;
-            background-color: #D8B4E2;
-            color: #210B2C;
-        }
-        h1, h2, h3 {
-            color: #55286F;
-            font-weight: 900;
-        }
-        .popup {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(32, 11, 44, 0.8);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .popup-content {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            text-align: center;
-            width: 300px;
-        }
-        .content {
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #fff;
-            border-radius: 8px;
-            min-height: 80vh;
-            position: relative;
-        }
-        .relato, .resposta {
-            background-color: #BC96E6;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
-        }
-        .botao-curtir {
-            cursor: pointer;
-            color: #AE759F;
-            font-size: 14px;
-            margin-right: 10px;
-        }
-        .curtido {
-            color: #28a745;
-        }
-        .contador {
-            font-size: 14px;
-            color: #AE759F;
-        }
-        input[type="file"], textarea, input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-sizing: border-box;
-        }
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-        button, .nav-button {
-            padding: 10px 20px;
-            background-color: #55286F;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            text-decoration: none;
-            display: inline-block;
-            margin: 5px;
-        }
-        button:hover, .nav-button:hover {
-            background-color: #AE759F;
-        }
-        .titulo-site {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        .descricao-site {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #210B2C;
-        }
-        .relato-header {
-            display: flex;
-            justify-content: space-between;
             align-items: center;
         }
-        .relato-header h3 {
-            margin: 0;
+
+        .container {
+            width: 90%;
+            max-width: 500px;
+            background: #1e1e1e;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.1);
         }
-        .respostas-container {
-            margin-top: 15px;
-            padding-left: 20px;
-            margin-bottom: 20px;
-        }
-        .resposta-item {
-            margin-bottom: 10px;
-            padding-left: 10px;
-            border-left: 2px solid #AE759F;
-            font-size: 14px;
-            background-color: #D8B4E2;
+
+        .hidden { display: none; }
+
+        .input-box, textarea {
+            width: 100%;
             padding: 10px;
-            border-radius: 8px;
-        }
-        .resposta-item strong {
-            display: block;
-            margin-bottom: 5px;
-            color: #55286F;
-        }
-        .navigation {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        .hidden {
-            display: none;
-        }
-        .media-container {
             margin: 10px 0;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+            background: #333;
+            color: #e0e0e0;
         }
-        .media-container img, .media-container video {
+
+        .button {
+            background: #00ffcc;
+            color: #121212;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .post, .reply {
+            background: #222;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .reply {
+            margin-left: 20px;
+            border-left: 2px solid #00ffcc;
+            padding-left: 10px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+
+        .like-btn, .reply-btn {
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: #00ffcc;
+            font-size: 14px;
+        }
+
+        .liked {
+            color: #ff4d4d;
+        }
+
+        .upload-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #00ffcc;
+            color: #121212;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .upload-input { display: none; }
+
+        .image-preview {
             max-width: 100%;
-            max-height: 300px;
-            border-radius: 8px;
+            margin-top: 10px;
+            border-radius: 5px;
+            display: none;
         }
     </style>
 </head>
 <body>
-
-<div id="popup" class="popup">
-    <div class="popup-content">
-        <h2>Digite a senha para acessar</h2>
-        <input type="password" id="senha" placeholder="Senha">
-        <button onclick="verificarSenha()">Entrar</button>
-    </div>
-</div>
-
-<div class="content">
-    <div class="navigation">
-        <a href="#" class="nav-button" id="btn-home">Página Inicial</a>
-        <a href="#" class="nav-button" id="btn-relatos">Ver Todos os Relatos</a>
+    <div class="container" id="loginBox">
+        <h2>Entrar</h2>
+        <input type="text" id="username" class="input-box" placeholder="Digite seu nome">
+        <button class="button" onclick="requestPassword()">Entrar</button>
     </div>
 
-    <!-- Página Inicial -->
-    <div id="pagina-inicial">
-        <div class="titulo-site">
-            <h1>Bem-vindo ao EscolaRelatosX</h1>
-            <h2>Compartilhe seus relatos com sua turma!</h2>
-        </div>
+    <div class="container hidden" id="mainApp">
+        <h2>Feed</h2>
+        <textarea id="postContent" placeholder="O que você está pensando?"></textarea>
 
-        <div class="descricao-site">
-            <p>EscolaRelatosX é uma plataforma para alunos compartilharem experiências, relatos e interagirem com seus colegas. Comente, curta e envie fotos ou vídeos para tornar a experiência ainda mais interessante!</p>
-        </div>
+        <label for="postMedia" class="upload-label">📷 Adicionar Imagem</label>
+        <input type="file" id="postMedia" class="upload-input" accept="image/*">
+        <img id="imagePreview" class="image-preview">
 
-        <div>
-            <h3>Postar um novo relato</h3>
-            <input type="text" id="nome" placeholder="Seu nome" required>
-            <input type="text" id="turma" placeholder="Sua turma" required>
-            <textarea id="novoRelato" placeholder="Compartilhe seu relato..."></textarea>
-            <input type="file" id="fotoRelato" accept="image/*, video/*">
-            <button onclick="enviarRelato()">Postar Relato</button>
-        </div>
+        <button class="button" onclick="postar()">Postar</button>
+
+        <div id="feed"></div>
     </div>
 
-    <!-- Página de Relatos -->
-    <div id="pagina-relatos" class="hidden">
-        <h1>Todos os Relatos</h1>
-        <div id="relatos"></div>
-    </div>
-</div>
-
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
-
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBM_NCmVeM93l8vv9iGbUnFIyIBU0_a2zs",
-        authDomain: "escolarelatosx-b25e2.firebaseapp.com",
-        databaseURL: "https://escolarelatosx-b25e2-default-rtdb.firebaseio.com",
-        projectId: "escolarelatosx-b25e2",
-        storageBucket: "escolarelatosx-b25e2.appspot.com",
-        messagingSenderId: "474818683762",
-        appId: "1:474818683762:web:137cc278602db0218073eb"
-    };
-
-    // Inicialização do Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-
-    const senhaCorreta = "Escola25";
-    let usuarioAutenticado = false;
-    
-    const paginaInicial = document.getElementById('pagina-inicial');
-    const paginaRelatos = document.getElementById('pagina-relatos');
-    const btnHome = document.getElementById('btn-home');
-    const btnRelatos = document.getElementById('btn-relatos');
-
-    // Configurar navegação
-    btnHome.addEventListener('click', function(e) {
-        e.preventDefault();
-        mostrarPaginaInicial();
-    });
-
-    btnRelatos.addEventListener('click', function(e) {
-        e.preventDefault();
-        mostrarPaginaRelatos();
-    });
-
-    function mostrarPaginaInicial() {
-        paginaInicial.classList.remove('hidden');
-        paginaRelatos.classList.add('hidden');
-    }
-
-    function mostrarPaginaRelatos() {
-        paginaInicial.classList.add('hidden');
-        paginaRelatos.classList.remove('hidden');
-        carregarRelatos();
-    }
-
-    function verificarSenha() {
-        const senhaInput = document.getElementById('senha').value;
-        if (senhaInput === senhaCorreta) {
-            usuarioAutenticado = true;
-            document.getElementById('popup').style.display = 'none';
-            mostrarPaginaInicial();
-        } else {
-            alert('Senha incorreta');
+    <script>
+        function requestPassword() {
+            let password = prompt("Digite a senha:");
+            if (password === "Escola25") {
+                let username = document.getElementById("username").value;
+                localStorage.setItem("username", username);
+                document.getElementById("loginBox").classList.add("hidden");
+                document.getElementById("mainApp").classList.remove("hidden");
+            } else {
+                alert("Senha incorreta!");
+            }
         }
-    }
 
-    function carregarRelatos() {
-        if (!usuarioAutenticado) return;
-        const relatoContainer = document.getElementById('relatos');
-        relatoContainer.innerHTML = '';
+        document.getElementById("postMedia").addEventListener("change", function(event) {
+            let file = event.target.files[0];
+            if (file) {
+                let url = URL.createObjectURL(file);
+                let preview = document.getElementById("imagePreview");
+                preview.src = url;
+                preview.style.display = "block";
+            }
+        });
 
-        database.ref('relatos').get().then(snapshot => {
-            if (!snapshot.exists()) {
-                relatoContainer.innerHTML = '<p>Nenhum relato postado ainda. Seja o primeiro!</p>';
+        function postar() {
+            let content = document.getElementById("postContent").value;
+            let file = document.getElementById("postMedia").files[0];
+            let username = localStorage.getItem("username");
+
+            if (!content && !file) {
+                alert("Escreva algo ou selecione uma imagem!");
                 return;
             }
 
-            snapshot.forEach((childSnapshot) => {
-                const relato = childSnapshot.val();
-                let conteudoRelato = `
-                    <div class="relato">
-                        <div class="relato-header">
-                            <h3>${relato.nome} (${relato.turma})</h3>
-                            <div>
-                                <button class="botao-curtir" onclick="curtir(${childSnapshot.key})">${relato.curtido ? 'Descurtir' : 'Curtir'}</button>
-                                <span class="contador">${relato.curtidas} Curtidas</span>
-                            </div>
-                        </div>
-                        <p>${relato.texto}</p>
-                        ${relato.midia ? `
-                            <div class="media-container">
-                                <img src="${relato.midia}" alt="Foto do relato">
-                            </div>` : ''}
-                        ${relato.tipoMidia === 'video' ? `
-                            <div class="media-container">
-                                <video src="${relato.midia}" controls></video>
-                            </div>` : ''}
-                    </div>
-                `;
-                relatoContainer.innerHTML += conteudoRelato;
-            });
-        });
-    }
-
-    function enviarRelato() {
-        const nome = document.getElementById('nome').value;
-        const turma = document.getElementById('turma').value;
-        const textoRelato = document.getElementById('novoRelato').value;
-        const arquivoRelato = document.getElementById('fotoRelato').files[0];
-
-        if (nome.trim() === '' || turma.trim() === '' || textoRelato.trim() === '') {
-            alert('Preencha todos os campos!');
-            return;
+            let postElement = criarPost(content, username, file);
+            document.getElementById("feed").prepend(postElement);
+            document.getElementById("postContent").value = "";
+            document.getElementById("postMedia").value = "";
+            document.getElementById("imagePreview").style.display = "none";
         }
 
-        let midiaBase64 = null;
-        let tipoMidia = null;
+        function criarPost(content, username, file, isReply = false) {
+            let postElement = document.createElement("div");
+            postElement.classList.add(isReply ? "reply" : "post");
 
-        if (arquivoRelato) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                midiaBase64 = e.target.result;
-                tipoMidia = arquivoRelato.type.startsWith('image/') ? 'foto' : 'video';
+            let postText = document.createElement("p");
+            postText.innerHTML = `<strong>${username}:</strong> ${content}`;
 
-                const novoRelato = {
-                    nome,
-                    turma,
-                    texto: textoRelato,
-                    midia: midiaBase64,
-                    tipoMidia,
-                    curtido: false,
-                    curtidas: 0,
-                    timestamp: Date.now()
-                };
+            if (file) {
+                let img = document.createElement("img");
+                img.src = URL.createObjectURL(file);
+                img.classList.add("image-preview");
+                img.style.display = "block";
+                postElement.appendChild(img);
+            }
 
-                database.ref('relatos').push(novoRelato);
-                alert('Relato postado com sucesso!');
-                mostrarPaginaRelatos();
-            };
-            reader.readAsDataURL(arquivoRelato);
-        } else {
-            const novoRelato = {
-                nome,
-                turma,
-                texto: textoRelato,
-                midia: null,
-                tipoMidia: null,
-                curtido: false,
-                curtidas: 0,
-                timestamp: Date.now()
+            let actions = document.createElement("div");
+            actions.classList.add("actions");
+
+            let likeBtn = document.createElement("button");
+            likeBtn.innerHTML = "♥︎ Curtir <span class='like-count'>0</span>";
+            likeBtn.classList.add("like-btn");
+            likeBtn.onclick = function () {
+                let countSpan = likeBtn.querySelector(".like-count");
+                let count = parseInt(countSpan.innerText);
+                if (likeBtn.classList.contains("liked")) {
+                    count--;
+                } else {
+                    count++;
+                }
+                countSpan.innerText = count;
+                likeBtn.classList.toggle("liked");
             };
 
-            database.ref('relatos').push(novoRelato);
-            alert('Relato postado com sucesso!');
-            mostrarPaginaRelatos();
-        }
-    }
+            let replyBtn = document.createElement("button");
+            replyBtn.innerHTML = "💬 Responder";
+            replyBtn.classList.add("reply-btn");
+            replyBtn.onclick = function () { responder(postElement, username); };
 
-    window.onload = function() {
-        if (!usuarioAutenticado) {
-            document.getElementById('popup').style.display = 'flex';
-        } else {
-            mostrarPaginaInicial();
-        }
-    };
-</script>
+            actions.appendChild(likeBtn);
+            actions.appendChild(replyBtn);
 
+            postElement.appendChild(postText);
+            postElement.appendChild(actions);
+
+            let replyContainer = document.createElement("div");
+            replyContainer.classList.add("reply-container");
+            postElement.appendChild(replyContainer);
+
+            return postElement;
+        }
+
+        function responder(postElement, parentUsername) {
+            let content = prompt(`Responda a ${parentUsername}:`);
+            let fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.accept = "image/*";
+            fileInput.onchange = function (event) {
+                let file = event.target.files[0];
+                if (file) {
+                    let username = localStorage.getItem("username");
+                    let replyElement = criarPost(content, username, file, true);
+                    postElement.querySelector(".reply-container").appendChild(replyElement);
+                }
+            };
+
+            if (content) {
+                let username = localStorage.getItem("username");
+                let replyElement = criarPost(content, username, null, true);
+                postElement.querySelector(".reply-container").appendChild(replyElement);
+            }
+
+            fileInput.click();
+        }
+    </script>
 </body>
 </html>
