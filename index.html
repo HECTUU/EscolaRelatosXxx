@@ -6,36 +6,37 @@
     <title>EscolaRelatosX</title>
     <!-- Link para a fonte Roboto Black -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" type="image/png">
     <style>
-        body { 
-            font-family: 'Roboto', sans-serif; 
-            margin: 0; 
-            padding: 0; 
-            background-color: #D8B4E2; 
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #D8B4E2;
             color: #210B2C;
         }
         h1, h2, h3 {
             color: #55286F;
             font-weight: 900;
         }
-        .popup { 
-            display: none; 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background-color: rgba(32, 11, 44, 0.8); 
-            justify-content: center; 
-            align-items: center; 
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(32, 11, 44, 0.8);
+            justify-content: center;
+            align-items: center;
             z-index: 1000;
         }
-        .popup-content { 
-            background-color: white; 
-            padding: 30px; 
-            border-radius: 8px; 
-            text-align: center; 
-            width: 300px; 
+        .popup-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            width: 300px;
         }
         .content {
             padding: 20px;
@@ -46,54 +47,54 @@
             min-height: 80vh;
             position: relative;
         }
-        .relato, .resposta { 
-            background-color: #BC96E6; 
-            padding: 15px; 
-            margin: 15px 0; 
-            border-radius: 8px; 
+        .relato, .resposta {
+            background-color: #BC96E6;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
         }
-        .botao-curtir { 
-            cursor: pointer; 
-            color: #AE759F; 
+        .botao-curtir {
+            cursor: pointer;
+            color: #AE759F;
             font-size: 14px;
             margin-right: 10px;
         }
-        .curtido { 
-            color: #28a745; 
+        .curtido {
+            color: #28a745;
         }
-        .contador { 
-            font-size: 14px; 
+        .contador {
+            font-size: 14px;
             color: #AE759F;
         }
-        input[type="file"], textarea, input[type="text"] { 
-            width: 100%; 
-            padding: 10px; 
-            margin-top: 10px; 
-            border: 1px solid #ddd; 
+        input[type="file"], textarea, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
             border-radius: 8px;
             box-sizing: border-box;
         }
-        textarea { 
-            resize: vertical; 
+        textarea {
+            resize: vertical;
             min-height: 80px;
         }
-        button, .nav-button { 
-            padding: 10px 20px; 
-            background-color: #55286F; 
-            color: white; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer; 
+        button, .nav-button {
+            padding: 10px 20px;
+            background-color: #55286F;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
             font-size: 16px;
             text-decoration: none;
             display: inline-block;
             margin: 5px;
         }
-        button:hover, .nav-button:hover { 
-            background-color: #AE759F; 
+        button:hover, .nav-button:hover {
+            background-color: #AE759F;
         }
         .titulo-site {
             text-align: center;
@@ -104,12 +105,12 @@
             margin-bottom: 20px;
             color: #210B2C;
         }
-        .relato-header { 
-            display: flex; 
+        .relato-header {
+            display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .relato-header h3 { 
+        .relato-header h3 {
             margin: 0;
         }
         .respostas-container {
@@ -193,12 +194,28 @@
     </div>
 </div>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+
 <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBM_NCmVeM93l8vv9iGbUnFIyIBU0_a2zs",
+        authDomain: "escolarelatosx-b25e2.firebaseapp.com",
+        databaseURL: "https://escolarelatosx-b25e2-default-rtdb.firebaseio.com",
+        projectId: "escolarelatosx-b25e2",
+        storageBucket: "escolarelatosx-b25e2.appspot.com",
+        messagingSenderId: "474818683762",
+        appId: "1:474818683762:web:137cc278602db0218073eb"
+    };
+
+    // Inicialização do Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
     const senhaCorreta = "Escola25";
     let usuarioAutenticado = false;
-    const relatos = JSON.parse(localStorage.getItem('relatos')) || [];
-
-    // Elementos da navegação
+    
     const paginaInicial = document.getElementById('pagina-inicial');
     const paginaRelatos = document.getElementById('pagina-relatos');
     const btnHome = document.getElementById('btn-home');
@@ -242,56 +259,40 @@
         const relatoContainer = document.getElementById('relatos');
         relatoContainer.innerHTML = '';
 
-        if (relatos.length === 0) {
-            relatoContainer.innerHTML = '<p>Nenhum relato postado ainda. Seja o primeiro!</p>';
-            return;
-        }
+        database.ref('relatos').get().then(snapshot => {
+            if (!snapshot.exists()) {
+                relatoContainer.innerHTML = '<p>Nenhum relato postado ainda. Seja o primeiro!</p>';
+                return;
+            }
 
-        relatos.forEach((relato, index) => {
-            let conteudoRelato = `
-                <div class="relato">
-                    <div class="relato-header">
-                        <h3>${relato.nome} (${relato.turma})</h3>
-                        <div>
-                            <button class="botao-curtir" onclick="curtir(${index})">${relato.curtido ? 'Descurtir' : 'Curtir'}</button>
-                            <span class="contador">${relato.curtidas} Curtidas</span>
-                        </div>
-                    </div>
-                    <p>${relato.texto}</p>
-                    ${relato.foto ? `
-                        <div class="media-container">
-                            <img src="${relato.foto}" alt="Foto do relato">
-                        </div>` : ''}
-                    ${relato.video ? `
-                        <div class="media-container">
-                            <video src="${relato.video}" controls></video>
-                        </div>` : ''}
-                    <div class="respostas-container" id="respostas-${index}">
-                        <h4>Respostas (${relato.respostas.length}):</h4>
-                        ${relato.respostas.map((resposta, i) => `
-                            <div class="resposta-item">
-                                <strong>${resposta.de} >> ${resposta.para}</strong>
-                                <p>${resposta.texto}</p>
-                                ${resposta.midia ? `
-                                    <div class="media-container">
-                                        ${resposta.midia.type === 'image' ? 
-                                            `<img src="${resposta.midia.url}" alt="Resposta com imagem">` : 
-                                            `<video src="${resposta.midia.url}" controls></video>`}
-                                    </div>` : ''}
+            snapshot.forEach((childSnapshot) => {
+                const relato = childSnapshot.val();
+                let conteudoRelato = `
+                    <div class="relato">
+                        <div class="relato-header">
+                            <h3>${relato.nome} (${relato.turma})</h3>
+                            <div>
+                                <button class="botao-curtir" onclick="curtir(${childSnapshot.key})">${relato.curtido ? 'Descurtir' : 'Curtir'}</button>
+                                <span class="contador">${relato.curtidas} Curtidas</span>
                             </div>
-                        `).join('')}
+                        </div>
+                        <p>${relato.texto}</p>
+                        ${relato.midia ? `
+                            <div class="media-container">
+                                <img src="${relato.midia}" alt="Foto do relato">
+                            </div>` : ''}
+                        ${relato.tipoMidia === 'video' ? `
+                            <div class="media-container">
+                                <video src="${relato.midia}" controls></video>
+                            </div>` : ''}
                     </div>
-                    <input type="file" id="midia-resposta-${index}" accept="image/*, video/*">
-                    <textarea id="resposta-${index}" placeholder="Responda ao relato..."></textarea>
-                    <button onclick="enviarResposta(${index})">Responder</button>
-                </div>
-            `;
-            relatoContainer.innerHTML += conteudoRelato;
+                `;
+                relatoContainer.innerHTML += conteudoRelato;
+            });
         });
     }
 
     function enviarRelato() {
-        if (!usuarioAutenticado) return;
         const nome = document.getElementById('nome').value;
         const turma = document.getElementById('turma').value;
         const textoRelato = document.getElementById('novoRelato').value;
@@ -302,37 +303,28 @@
             return;
         }
 
-        let foto = null;
-        let video = null;
+        let midiaBase64 = null;
+        let tipoMidia = null;
 
         if (arquivoRelato) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                if (arquivoRelato.type.startsWith('image/')) {
-                    foto = e.target.result;
-                } else if (arquivoRelato.type.startsWith('video/')) {
-                    video = e.target.result;
-                }
-                
+                midiaBase64 = e.target.result;
+                tipoMidia = arquivoRelato.type.startsWith('image/') ? 'foto' : 'video';
+
                 const novoRelato = {
                     nome,
                     turma,
                     texto: textoRelato,
-                    foto,
-                    video,
+                    midia: midiaBase64,
+                    tipoMidia,
                     curtido: false,
                     curtidas: 0,
-                    respostas: []
+                    timestamp: Date.now()
                 };
-                
-                relatos.unshift(novoRelato); // Adiciona no início do array
-                localStorage.setItem('relatos', JSON.stringify(relatos));
-                
-                document.getElementById('nome').value = '';
-                document.getElementById('turma').value = '';
-                document.getElementById('novoRelato').value = '';
-                document.getElementById('fotoRelato').value = '';
-                
+
+                database.ref('relatos').push(novoRelato);
+                alert('Relato postado com sucesso!');
                 mostrarPaginaRelatos();
             };
             reader.readAsDataURL(arquivoRelato);
@@ -341,75 +333,16 @@
                 nome,
                 turma,
                 texto: textoRelato,
-                foto,
-                video,
+                midia: null,
+                tipoMidia: null,
                 curtido: false,
                 curtidas: 0,
-                respostas: []
+                timestamp: Date.now()
             };
-            
-            relatos.unshift(novoRelato); // Adiciona no início do array
-            localStorage.setItem('relatos', JSON.stringify(relatos));
-            
-            document.getElementById('nome').value = '';
-            document.getElementById('turma').value = '';
-            document.getElementById('novoRelato').value = '';
-            
+
+            database.ref('relatos').push(novoRelato);
+            alert('Relato postado com sucesso!');
             mostrarPaginaRelatos();
-        }
-    }
-
-    function curtir(indice) {
-        const relato = relatos[indice];
-        relato.curtido = !relato.curtido;
-        relato.curtidas = relato.curtido ? relato.curtidas + 1 : relato.curtidas - 1;
-        localStorage.setItem('relatos', JSON.stringify(relatos));
-        carregarRelatos();
-    }
-
-    function enviarResposta(indice) {
-        const textoResposta = document.getElementById(`resposta-${indice}`).value;
-        const arquivoResposta = document.getElementById(`midia-resposta-${indice}`).files[0];
-        
-        if (textoResposta.trim() === '' && !arquivoResposta) {
-            alert('Digite uma resposta ou envie uma mídia!');
-            return;
-        }
-
-        const nomeResposta = prompt('Seu nome:') || 'Anônimo';
-        const nomePara = prompt('Quem você está respondendo:') || 'Todos';
-
-        if (arquivoResposta) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const resposta = {
-                    de: nomeResposta,
-                    para: nomePara,
-                    texto: textoResposta,
-                    midia: {
-                        type: arquivoResposta.type.startsWith('image/') ? 'image' : 'video',
-                        url: e.target.result
-                    }
-                };
-                
-                relatos[indice].respostas.push(resposta);
-                localStorage.setItem('relatos', JSON.stringify(relatos));
-                document.getElementById(`resposta-${indice}`).value = '';
-                document.getElementById(`midia-resposta-${indice}`).value = '';
-                carregarRelatos();
-            };
-            reader.readAsDataURL(arquivoResposta);
-        } else {
-            const resposta = {
-                de: nomeResposta,
-                para: nomePara,
-                texto: textoResposta
-            };
-            
-            relatos[indice].respostas.push(resposta);
-            localStorage.setItem('relatos', JSON.stringify(relatos));
-            document.getElementById(`resposta-${indice}`).value = '';
-            carregarRelatos();
         }
     }
 
