@@ -1,181 +1,247 @@
-<!DOCTYPE html><html lang="pt">
+<!DOCTYPE html>
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rede Social</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');body {
-        font-family: 'Poppins', sans-serif;
-        background: linear-gradient(135deg, #121212, #1e1e2e);
-        color: #e0e0e0;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        height: 100vh;
-        justify-content: center;
-    }
+        /* Seus estilos antigos, melhorados com alguns detalhes mais modernos */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    .container {
-        width: 90%;
-        max-width: 500px;
-        background: linear-gradient(135deg, #222, #333);
-        padding: 20px;
-        margin: 20px;
-        border-radius: 12px;
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-        animation: fadeIn 0.5s ease-in-out;
-    }
+        .container {
+            width: 90%;
+            max-width: 500px;
+            background: #1e1e1e;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.1);
+        }
 
-    .hidden { display: none; }
+        .input-box, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+            background: #333;
+            color: #e0e0e0;
+        }
 
-    .button {
-        background: linear-gradient(135deg, #00ffcc, #00b3a0);
-        color: #121212;
-        padding: 12px;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        cursor: pointer;
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
-    .button:hover {
-        transform: scale(1.05);
-        box-shadow: 0px 4px 10px rgba(0, 255, 204, 0.3);
-    }
-    .delete-btn {
-        background: linear-gradient(135deg, #ff4d4d, #cc0000);
-        color: white;
-        padding: 10px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-    .delete-btn:hover {
-        transform: scale(1.05);
-    }
+        .button {
+            background: #00ffcc;
+            color: #121212;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-</style>
+        .post, .reply {
+            background: #222;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
 
+        .reply {
+            margin-left: 20px;
+            border-left: 2px solid #00ffcc;
+            padding-left: 10px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+
+        .like-btn, .reply-btn {
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: #00ffcc;
+            font-size: 14px;
+        }
+
+        .liked {
+            color: #ff4d4d;
+        }
+
+        .upload-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #00ffcc;
+            color: #121212;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .upload-input { display: none; }
+
+        .image-preview {
+            max-width: 100%;
+            margin-top: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
 </head>
 <body>
     <div class="container" id="loginBox">
         <h2>Entrar</h2>
         <input type="text" id="username" class="input-box" placeholder="Digite seu nome">
         <button class="button" onclick="requestPassword()">Entrar</button>
-    </div><div class="container hidden" id="mainApp">
-    <h2>Feed</h2>
-    <textarea id="postContent" placeholder="O que você está pensando?"></textarea>
-    <label for="postMedia" class="button">📷 Adicionar Imagem/Vídeo</label>
-    <input type="file" id="postMedia" class="upload-input" accept="image/*,video/*" hidden>
-    <button class="button" onclick="postar()">➕ Postar</button>
-    <div id="feed"></div>
-</div>
+    </div>
 
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBM_NCmVeM93l8vv9iGbUnFIyIBU0_a2zs",
-        authDomain: "escolarelatosx-b25e2.firebaseapp.com",
-        databaseURL: "https://escolarelatosx-b25e2-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "escolarelatosx-b25e2",
-        storageBucket: "escolarelatosx-b25e2.appspot.com",
-        messagingSenderId: "474818683762",
-        appId: "1:474818683762:web:137cc278602db0218073eb",
-        measurementId: "G-MFDKLX3TV6"
-    };
-    
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const storage = firebase.storage();
-    
-    function requestPassword() {
-        let password = prompt("Digite a senha:");
-        if (password === "Escola25") {
-            let username = document.getElementById("username").value;
-            localStorage.setItem("username", username);
-            document.getElementById("loginBox").classList.add("hidden");
-            document.getElementById("mainApp").classList.remove("hidden");
-            carregarPosts();
-        } else {
-            alert("Senha incorreta!");
+    <div class="container hidden" id="mainApp">
+        <h2>Feed</h2>
+        <textarea id="postContent" placeholder="O que você está pensando?"></textarea>
+
+        <label for="postMedia" class="upload-label">📷 Adicionar Imagem</label>
+        <input type="file" id="postMedia" class="upload-input" accept="image/*">
+        <img id="imagePreview" class="image-preview">
+
+        <button class="button" onclick="postar()">Postar</button>
+
+        <div id="feed"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBM_NCmVeM93l8vv9iGbUnFIyIBU0_a2zs",
+            authDomain: "escolarelatosx-b25e2.firebaseapp.com",
+            databaseURL: "https://escolarelatosx-b25e2-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "escolarelatosx-b25e2",
+            storageBucket: "escolarelatosx-b25e2.appspot.com",
+            messagingSenderId: "474818683762",
+            appId: "1:474818683762:web:137cc278602db0218073eb",
+            measurementId: "G-MFDKLX3TV6"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const storage = firebase.storage();
+
+        function requestPassword() {
+            let password = prompt("Digite a senha:");
+            if (password === "Escola25") {
+                let username = document.getElementById("username").value;
+                localStorage.setItem("username", username);
+                document.getElementById("loginBox").classList.add("hidden");
+                document.getElementById("mainApp").classList.remove("hidden");
+            } else {
+                alert("Senha incorreta!");
+            }
         }
-    }
-    
-    function postar() {
-        let content = document.getElementById("postContent").value;
-        let file = document.getElementById("postMedia").files[0];
-        let username = localStorage.getItem("username");
-        
-        if (!content && !file) {
-            alert("Escreva algo ou selecione um arquivo!");
-            return;
+
+        document.getElementById("postMedia").addEventListener("change", function(event) {
+            let file = event.target.files[0];
+            if (file) {
+                let url = URL.createObjectURL(file);
+                let preview = document.getElementById("imagePreview");
+                preview.src = url;
+                preview.style.display = "block";
+            }
+        });
+
+        function postar() {
+            let content = document.getElementById("postContent").value;
+            let file = document.getElementById("postMedia").files[0];
+            let username = localStorage.getItem("username");
+
+            if (!content && !file) {
+                alert("Escreva algo ou selecione uma imagem!");
+                return;
+            }
+
+            // Save post to Firebase Realtime Database
+            let postRef = db.ref("posts").push();
+            let postId = postRef.key;
+
+            if (file) {
+                let storageRef = storage.ref(`posts/${postId}/${file.name}`);
+                storageRef.put(file).then(snapshot => {
+                    snapshot.ref.getDownloadURL().then(url => {
+                        salvarPost(postId, username, content, url);
+                    });
+                }).catch((error) => {
+                    console.error("Erro ao enviar o arquivo:", error);
+                });
+            } else {
+                salvarPost(postId, username, content, "");
+            }
         }
-        
-        let postRef = db.ref("posts").push();
-        let postId = postRef.key;
-        
-        if (file) {
-            let storageRef = storage.ref(`posts/${postId}/${file.name}`);
-            storageRef.put(file).then(snapshot => {
-                snapshot.ref.getDownloadURL().then(url => {
-                    salvarPost(postId, username, content, url);
+
+        function salvarPost(postId, username, content, mediaUrl) {
+            db.ref("posts/" + postId).set({
+                username: username,
+                content: content,
+                mediaUrl: mediaUrl,
+                timestamp: Date.now()
+            }).then(() => {
+                carregarPosts();  // Atualiza o feed após postar
+                document.getElementById("postContent").value = "";
+                document.getElementById("postMedia").value = "";
+                document.getElementById("imagePreview").style.display = "none";
+            }).catch((error) => {
+                console.error("Erro ao salvar o post:", error);
+            });
+        }
+
+        function carregarPosts() {
+            db.ref("posts").orderByChild("timestamp").on("value", function(snapshot) {
+                let feed = document.getElementById("feed");
+                feed.innerHTML = "";
+                snapshot.forEach(function(childSnapshot) {
+                    let postData = childSnapshot.val();
+                    let postElement = criarPost(postData.content, postData.username, postData.mediaUrl, childSnapshot.key);
+                    feed.appendChild(postElement);
                 });
             });
-        } else {
-            salvarPost(postId, username, content, "");
         }
-    }
-    
-    function salvarPost(postId, username, content, mediaUrl) {
-        db.ref("posts/" + postId).set({
-            username: username,
-            content: content,
-            mediaUrl: mediaUrl,
-            timestamp: Date.now()
-        });
-    }
-    
-    function carregarPosts() {
-        db.ref("posts").orderByChild("timestamp").on("value", snapshot => {
-            let feed = document.getElementById("feed");
-            feed.innerHTML = "";
-            snapshot.forEach(childSnapshot => {
-                let post = childSnapshot.val();
-                let postElement = document.createElement("div");
-                postElement.classList.add("post");
-                postElement.innerHTML = `<strong>${post.username}:</strong> ${post.content}<br>`;
-                
-                if (post.mediaUrl) {
-                    let media = document.createElement("img");
-                    media.src = post.mediaUrl;
-                    media.style.width = "100%";
-                    media.style.borderRadius = "8px";
-                    postElement.appendChild(media);
-                }
-                
-                let deleteBtn = document.createElement("button");
-                deleteBtn.innerText = "🗑 Excluir";
-                deleteBtn.classList.add("delete-btn");
-                deleteBtn.onclick = function () { excluirPost(childSnapshot.key); };
-                
-                postElement.appendChild(deleteBtn);
-                feed.prepend(postElement);
-            });
-        });
-    }
-</script>
 
-</body>
-</html>
+        function criarPost(content, username, mediaUrl, postId) {
+            let postElement = document.createElement("div");
+            postElement.classList.add("post");
+
+            let postText = document.createElement("p");
+            postText.innerHTML = `<strong>${username}:</strong> ${content}`;
+
+            if (mediaUrl) {
+                let img = document.createElement("img");
+                img.src = mediaUrl;
+                img.classList.add("image-preview");
+                postElement.appendChild(img);
+            }
+
+            let actions = document.createElement("div");
+            actions.classList.add("actions");
+
+            let likeBtn = document.createElement("button");
+            likeBtn.innerHTML = "♥︎ Curtir <span class='like-count'>0</span>";
+            likeBtn.classList.add("like-btn");
+            likeBtn.onclick = function () {
+                let
