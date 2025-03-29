@@ -6,7 +6,7 @@
     <title>Rede Social</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
-
+        
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #121212;
@@ -27,8 +27,6 @@
             border-radius: 10px;
             box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.1);
         }
-
-        .hidden { display: none; }
 
         .input-box, textarea {
             width: 100%;
@@ -82,75 +80,118 @@
             color: #ff4d4d;
         }
 
-        .upload-label {
+        .feed {
+            width: 100%;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
+        }
+
+        /* Sidebar */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 250px;
+            height: 100%;
+            background: #1e1e1e;
+            color: #e0e0e0;
+            padding: 20px;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        #sidebar.open {
+            transform: translateX(0);
+        }
+
+        #sidebar h3 {
+            margin-bottom: 10px;
+        }
+
+        #sidebar button {
             background: #00ffcc;
             color: #121212;
             padding: 10px;
+            border: none;
             border-radius: 5px;
             cursor: pointer;
-            text-align: center;
-            width: 100%;
             margin-top: 10px;
         }
 
-        .upload-input { display: none; }
-
-        .image-preview {
-            max-width: 100%;
-            margin-top: 10px;
-            border-radius: 5px;
-            display: none;
+        #sidebar ul {
+            list-style: none;
+            padding: 0;
         }
 
-        #notifications {
+        #sidebar ul li {
+            margin: 5px 0;
+        }
+
+        /* Overlay para esconder o conteúdo principal quando sidebar estiver aberta */
+        #overlay {
             position: fixed;
-            top: 10px;
-            right: 10px;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        #overlay.open {
+            display: block;
+        }
+
+        /* Estilo do botão de abrir a sidebar */
+        .open-sidebar-btn {
             background: #00ffcc;
             color: #121212;
             padding: 10px;
+            border: none;
             border-radius: 5px;
-            display: none;
+            font-size: 16px;
+            cursor: pointer;
+            position: absolute;
+            top: 20px;
+            left: 20px;
         }
     </style>
 </head>
 <body>
-    <!-- Login -->
+    <!-- Tela de Login -->
     <div class="container" id="loginBox">
         <h2>Entrar</h2>
         <input type="text" id="username" class="input-box" placeholder="Digite seu nome">
-        <input type="file" id="profileImage" class="upload-input" accept="image/*">
         <button class="button" onclick="requestPassword()">Entrar</button>
     </div>
 
-    <!-- Feed Principal -->
+    <!-- Tela Principal (Feed de Postagens) -->
     <div class="container hidden" id="mainApp">
         <h2>Feed</h2>
         <textarea id="postContent" placeholder="O que você está pensando?"></textarea>
-
-        <label for="postMedia" class="upload-label">📷 Adicionar Imagem</label>
-        <input type="file" id="postMedia" class="upload-input" accept="image/*">
-        <img id="imagePreview" class="image-preview">
-
         <button class="button" onclick="postar()">Postar</button>
+        <div id="feed" class="feed"></div>
 
-        <div id="feed"></div>
+        <!-- Botão para abrir a sidebar -->
+        <button class="open-sidebar-btn" onclick="toggleSidebar()">Abrir Notificações</button>
     </div>
 
-    <!-- Notificações -->
-    <div id="notifications" class="hidden">
+    <!-- Sidebar (Notificações) -->
+    <div id="sidebar">
         <h3>Notificações</h3>
         <ul id="notificationList"></ul>
+        <button onclick="toggleSidebar()">Fechar</button>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js"></script>
+    <!-- Overlay para esconder o conteúdo principal quando a sidebar estiver aberta -->
+    <div id="overlay" onclick="toggleSidebar()"></div>
 
-    <script>
-        // Configuração do Firebase
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
+        import { getDatabase, ref, set, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js";
+
         const firebaseConfig = {
             apiKey: "AIzaSyBM_NCmVeM93l8vv9iGbUnFIyIBU0_a2zs",
             authDomain: "escolarelatosx-b25e2.firebaseapp.com",
@@ -162,18 +203,16 @@
             measurementId: "G-MFDKLX3TV6"
         };
 
-        // Inicializa o Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.database(app);
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
 
-        // Função para solicitar a senha e autenticar o usuário
+        // Função de login
         function requestPassword() {
             let username = document.getElementById("username").value;
             if (username) {
                 localStorage.setItem("username", username);
                 document.getElementById("loginBox").classList.add("hidden");
                 document.getElementById("mainApp").classList.remove("hidden");
-
                 carregarPosts();
             }
         }
@@ -181,11 +220,10 @@
         // Função para postar conteúdo
         function postar() {
             let content = document.getElementById("postContent").value;
-            let file = document.getElementById("postMedia").files[0];
             let username = localStorage.getItem("username");
 
-            if (!content && !file) {
-                alert("Escreva algo ou selecione uma imagem!");
+            if (!content) {
+                alert("Escreva algo!");
                 return;
             }
 
@@ -198,58 +236,39 @@
                 replies: []
             };
 
-            // Se houver arquivo, armazene também
-            if (file) {
-                let reader = new FileReader();
-                reader.onloadend = function () {
-                    postData.image = reader.result;
-                    salvarPostNoFirebase(postData);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                salvarPostNoFirebase(postData);
-            }
+            // Salva o post no Firebase
+            salvarPostNoFirebase(postData);
         }
 
         // Função para salvar o post no Firebase
         function salvarPostNoFirebase(postData) {
-            let postRef = database.ref("posts").push();
-            postRef.set(postData, function(error) {
-                if (error) {
-                    console.log("Erro ao salvar post:", error);
-                } else {
-                    console.log("Post salvo com sucesso!");
-                    carregarPosts(); // Recarrega os posts após salvar
-                }
+            let postRef = push(ref(database, 'posts'));
+            set(postRef, postData).then(() => {
+                carregarPosts(); // Recarrega os posts após salvar
+            }).catch((error) => {
+                console.error("Erro ao salvar post:", error);
             });
         }
 
         // Função para carregar posts do Firebase
         function carregarPosts() {
-            const postsRef = database.ref("posts");
+            const postsRef = ref(database, 'posts');
 
-            postsRef.on("child_added", function(snapshot) {
-                let postData = snapshot.val();
-                let postElement = criarPost(postData.content, postData.username, postData.image);
+            onChildAdded(postsRef, (data) => {
+                let postData = data.val();
+                let postElement = criarPost(postData.content, postData.username, data.key);
                 document.getElementById("feed").prepend(postElement);
             });
         }
 
         // Função para criar a estrutura do post no HTML
-        function criarPost(content, username, file) {
+        function criarPost(content, username, postId) {
             let postElement = document.createElement("div");
             postElement.classList.add("post");
+            postElement.id = postId;
 
             let postText = document.createElement("p");
             postText.innerHTML = `<strong>${username}:</strong> ${content}`;
-
-            if (file) {
-                let img = document.createElement("img");
-                img.src = file;
-                img.classList.add("image-preview");
-                img.style.display = "block";
-                postElement.appendChild(img);
-            }
 
             let actions = document.createElement("div");
             actions.classList.add("actions");
@@ -272,7 +291,7 @@
             let replyBtn = document.createElement("button");
             replyBtn.innerHTML = "💬 Responder";
             replyBtn.classList.add("reply-btn");
-            replyBtn.onclick = function () { responder(postElement, username); };
+            replyBtn.onclick = function () { responder(postElement, username, postId); };
 
             actions.appendChild(likeBtn);
             actions.appendChild(replyBtn);
@@ -288,7 +307,7 @@
         }
 
         // Função para adicionar resposta ao post
-        function responder(postElement, username) {
+        function responder(postElement, username, postId) {
             let replyContent = prompt("Digite sua resposta:");
 
             if (replyContent) {
@@ -299,13 +318,21 @@
                 postElement.querySelector(".replies").appendChild(replyElement);
 
                 // Salva a resposta no Firebase
-                let postId = postElement.id;
-                let repliesRef = database.ref("posts/" + postId + "/replies");
-                repliesRef.push({
+                let repliesRef = ref(database, "posts/" + postId + "/replies");
+                push(repliesRef, {
                     username: username,
                     content: replyContent
                 });
             }
+        }
+
+        // Função para abrir/fechar a sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const overlay = document.getElementById("overlay");
+
+            sidebar.classList.toggle("open");
+            overlay.classList.toggle("open");
         }
     </script>
 </body>
