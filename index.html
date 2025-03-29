@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rede Social</title>
     <style>
-        /* Seus estilos antigos, melhorados com alguns detalhes mais modernos */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #121212;
@@ -26,6 +27,8 @@
             border-radius: 10px;
             box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.1);
         }
+
+        .hidden { display: none; }
 
         .input-box, textarea {
             width: 100%;
@@ -101,15 +104,29 @@
             border-radius: 5px;
             display: none;
         }
+
+        #notifications {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #00ffcc;
+            color: #121212;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
     </style>
 </head>
 <body>
+    <!-- Login -->
     <div class="container" id="loginBox">
         <h2>Entrar</h2>
         <input type="text" id="username" class="input-box" placeholder="Digite seu nome">
+        <input type="file" id="profileImage" class="upload-input" accept="image/*">
         <button class="button" onclick="requestPassword()">Entrar</button>
     </div>
 
+    <!-- Feed Principal -->
     <div class="container hidden" id="mainApp">
         <h2>Feed</h2>
         <textarea id="postContent" placeholder="O que você está pensando?"></textarea>
@@ -123,50 +140,45 @@
         <div id="feed"></div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"></script>
+    <!-- Notificações -->
+    <div id="notifications" class="hidden">
+        <h3>Notificações</h3>
+        <ul id="notificationList"></ul>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js"></script>
 
     <script>
-        // Firebase configuration
+        // Configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBM_NCmVeM93l8vv9iGbUnFIyIBU0_a2zs",
             authDomain: "escolarelatosx-b25e2.firebaseapp.com",
             databaseURL: "https://escolarelatosx-b25e2-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "escolarelatosx-b25e2",
-            storageBucket: "escolarelatosx-b25e2.appspot.com",
+            storageBucket: "escolarelatosx-b25e2.firebasestorage.app",
             messagingSenderId: "474818683762",
             appId: "1:474818683762:web:137cc278602db0218073eb",
             measurementId: "G-MFDKLX3TV6"
         };
 
-        // Initialize Firebase
+        // Inicializa o Firebase
         const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const storage = firebase.storage();
+        const database = firebase.database(app);
 
+        // Função para solicitar a senha e autenticar o usuário
         function requestPassword() {
-            let password = prompt("Digite a senha:");
-            if (password === "Escola25") {
-                let username = document.getElementById("username").value;
+            let username = document.getElementById("username").value;
+            if (username) {
                 localStorage.setItem("username", username);
                 document.getElementById("loginBox").classList.add("hidden");
                 document.getElementById("mainApp").classList.remove("hidden");
-            } else {
-                alert("Senha incorreta!");
+
+                carregarPosts();
             }
         }
 
-        document.getElementById("postMedia").addEventListener("change", function(event) {
-            let file = event.target.files[0];
-            if (file) {
-                let url = URL.createObjectURL(file);
-                let preview = document.getElementById("imagePreview");
-                preview.src = url;
-                preview.style.display = "block";
-            }
-        });
-
+        // Função para postar conteúdo
         function postar() {
             let content = document.getElementById("postContent").value;
             let file = document.getElementById("postMedia").files[0];
@@ -177,63 +189,65 @@
                 return;
             }
 
-            // Save post to Firebase Realtime Database
-            let postRef = db.ref("posts").push();
-            let postId = postRef.key;
+            // Objeto do post a ser salvo
+            let postData = {
+                username: username,
+                content: content,
+                date: new Date().toISOString(),
+                likes: 0,
+                replies: []
+            };
 
+            // Se houver arquivo, armazene também
             if (file) {
-                let storageRef = storage.ref(`posts/${postId}/${file.name}`);
-                storageRef.put(file).then(snapshot => {
-                    snapshot.ref.getDownloadURL().then(url => {
-                        salvarPost(postId, username, content, url);
-                    });
-                }).catch((error) => {
-                    console.error("Erro ao enviar o arquivo:", error);
-                });
+                let reader = new FileReader();
+                reader.onloadend = function () {
+                    postData.image = reader.result;
+                    salvarPostNoFirebase(postData);
+                };
+                reader.readAsDataURL(file);
             } else {
-                salvarPost(postId, username, content, "");
+                salvarPostNoFirebase(postData);
             }
         }
 
-        function salvarPost(postId, username, content, mediaUrl) {
-            db.ref("posts/" + postId).set({
-                username: username,
-                content: content,
-                mediaUrl: mediaUrl,
-                timestamp: Date.now()
-            }).then(() => {
-                carregarPosts();  // Atualiza o feed após postar
-                document.getElementById("postContent").value = "";
-                document.getElementById("postMedia").value = "";
-                document.getElementById("imagePreview").style.display = "none";
-            }).catch((error) => {
-                console.error("Erro ao salvar o post:", error);
+        // Função para salvar o post no Firebase
+        function salvarPostNoFirebase(postData) {
+            let postRef = database.ref("posts").push();
+            postRef.set(postData, function(error) {
+                if (error) {
+                    console.log("Erro ao salvar post:", error);
+                } else {
+                    console.log("Post salvo com sucesso!");
+                    carregarPosts(); // Recarrega os posts após salvar
+                }
             });
         }
 
+        // Função para carregar posts do Firebase
         function carregarPosts() {
-            db.ref("posts").orderByChild("timestamp").on("value", function(snapshot) {
-                let feed = document.getElementById("feed");
-                feed.innerHTML = "";
-                snapshot.forEach(function(childSnapshot) {
-                    let postData = childSnapshot.val();
-                    let postElement = criarPost(postData.content, postData.username, postData.mediaUrl, childSnapshot.key);
-                    feed.appendChild(postElement);
-                });
+            const postsRef = database.ref("posts");
+
+            postsRef.on("child_added", function(snapshot) {
+                let postData = snapshot.val();
+                let postElement = criarPost(postData.content, postData.username, postData.image);
+                document.getElementById("feed").prepend(postElement);
             });
         }
 
-        function criarPost(content, username, mediaUrl, postId) {
+        // Função para criar a estrutura do post no HTML
+        function criarPost(content, username, file) {
             let postElement = document.createElement("div");
             postElement.classList.add("post");
 
             let postText = document.createElement("p");
             postText.innerHTML = `<strong>${username}:</strong> ${content}`;
 
-            if (mediaUrl) {
+            if (file) {
                 let img = document.createElement("img");
-                img.src = mediaUrl;
+                img.src = file;
                 img.classList.add("image-preview");
+                img.style.display = "block";
                 postElement.appendChild(img);
             }
 
@@ -244,4 +258,55 @@
             likeBtn.innerHTML = "♥︎ Curtir <span class='like-count'>0</span>";
             likeBtn.classList.add("like-btn");
             likeBtn.onclick = function () {
-                let
+                let countSpan = likeBtn.querySelector(".like-count");
+                let count = parseInt(countSpan.innerText);
+                if (likeBtn.classList.contains("liked")) {
+                    count--;
+                } else {
+                    count++;
+                }
+                countSpan.innerText = count;
+                likeBtn.classList.toggle("liked");
+            };
+
+            let replyBtn = document.createElement("button");
+            replyBtn.innerHTML = "💬 Responder";
+            replyBtn.classList.add("reply-btn");
+            replyBtn.onclick = function () { responder(postElement, username); };
+
+            actions.appendChild(likeBtn);
+            actions.appendChild(replyBtn);
+
+            postElement.appendChild(postText);
+            postElement.appendChild(actions);
+
+            let replyContainer = document.createElement("div");
+            replyContainer.classList.add("replies");
+            postElement.appendChild(replyContainer);
+
+            return postElement;
+        }
+
+        // Função para adicionar resposta ao post
+        function responder(postElement, username) {
+            let replyContent = prompt("Digite sua resposta:");
+
+            if (replyContent) {
+                let replyElement = document.createElement("div");
+                replyElement.classList.add("reply");
+                replyElement.innerHTML = `<strong>${username}:</strong> ${replyContent}`;
+
+                postElement.querySelector(".replies").appendChild(replyElement);
+
+                // Salva a resposta no Firebase
+                let postId = postElement.id;
+                let repliesRef = database.ref("posts/" + postId + "/replies");
+                repliesRef.push({
+                    username: username,
+                    content: replyContent
+                });
+            }
+        }
+    </script>
+</body>
+</html>
