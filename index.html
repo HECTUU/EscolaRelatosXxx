@@ -1,339 +1,86 @@
-<!DOCTYPE html>
-<html lang="pt">
+<!DOCTYPE html><html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rede Social</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";const firebaseConfig = {
+        apiKey: "AIzaSyBM_NCmVeM93l8vv9iGbUnFIyIBU0_a2zs",
+        authDomain: "escolarelatosx-b25e2.firebaseapp.com",
+        databaseURL: "https://escolarelatosx-b25e2-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "escolarelatosx-b25e2",
+        storageBucket: "escolarelatosx-b25e2.firebasestorage.app",
+        messagingSenderId: "474818683762",
+        appId: "1:474818683762:web:137cc278602db0218073eb",
+        measurementId: "G-MFDKLX3TV6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+
+    async function login() {
+        let username = document.getElementById("username").value;
+        if (!username) {
+            alert("Digite um nome de usuário");
+            return;
+        }
+
+        localStorage.setItem("username", username);
+        document.getElementById("loginBox").classList.add("hidden");
+        document.getElementById("mainApp").classList.remove("hidden");
+    }
+
+    async function postar() {
+        let content = document.getElementById("postContent").value;
+        let username = localStorage.getItem("username");
+        if (!content) {
+            alert("Escreva algo!");
+            return;
+        }
         
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #121212;
-            color: #e0e0e0;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        await addDoc(collection(db, "posts"), {
+            username: username,
+            content: content,
+            timestamp: new Date()
+        });
+        document.getElementById("postContent").value = "";
+    }
 
-        .container {
-            width: 90%;
-            max-width: 500px;
-            background: #1e1e1e;
-            padding: 20px;
-            margin: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.1);
-        }
+    onSnapshot(collection(db, "posts"), (snapshot) => {
+        document.getElementById("feed").innerHTML = "";
+        snapshot.forEach((doc) => {
+            let data = doc.data();
+            let postElement = document.createElement("div");
+            postElement.classList.add("post");
+            postElement.innerHTML = `<p><strong>${data.username}:</strong> ${data.content}</p>`;
+            document.getElementById("feed").prepend(postElement);
+        });
+    });
+</script>
+<style>
+    body { font-family: Arial, sans-serif; background: #121212; color: #fff; text-align: center; }
+    .container { max-width: 400px; margin: 20px auto; background: #1e1e1e; padding: 20px; border-radius: 10px; }
+    .input-box, textarea { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    .button { background: #00ffcc; padding: 10px; border: none; border-radius: 5px; cursor: pointer; }
+    .hidden { display: none; }
+    .post { background: #222; padding: 10px; border-radius: 10px; margin-top: 10px; }
+</style>
 
-        .input-box, textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            border: none;
-            font-size: 16px;
-            background: #333;
-            color: #e0e0e0;
-        }
-
-        .button {
-            background: #00ffcc;
-            color: #121212;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        .post, .reply {
-            background: #222;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 10px;
-        }
-
-        .reply {
-            margin-left: 20px;
-            border-left: 2px solid #00ffcc;
-            padding-left: 10px;
-        }
-
-        .actions {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 5px;
-        }
-
-        .like-btn, .reply-btn {
-            border: none;
-            background: none;
-            cursor: pointer;
-            color: #00ffcc;
-            font-size: 14px;
-        }
-
-        .liked {
-            color: #ff4d4d;
-        }
-
-        .feed {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Sidebar */
-        #sidebar {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 250px;
-            height: 100%;
-            background: #1e1e1e;
-            color: #e0e0e0;
-            padding: 20px;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-
-        #sidebar.open {
-            transform: translateX(0);
-        }
-
-        #sidebar h3 {
-            margin-bottom: 10px;
-        }
-
-        #sidebar button {
-            background: #00ffcc;
-            color: #121212;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        #sidebar ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        #sidebar ul li {
-            margin: 5px 0;
-        }
-
-        /* Overlay para esconder o conteúdo principal quando sidebar estiver aberta */
-        #overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            z-index: 999;
-        }
-
-        #overlay.open {
-            display: block;
-        }
-
-        /* Estilo do botão de abrir a sidebar */
-        .open-sidebar-btn {
-            background: #00ffcc;
-            color: #121212;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            position: absolute;
-            top: 20px;
-            left: 20px;
-        }
-    </style>
 </head>
 <body>
-    <!-- Tela de Login -->
     <div class="container" id="loginBox">
         <h2>Entrar</h2>
-        <input type="text" id="username" class="input-box" placeholder="Digite seu nome">
-        <button class="button" onclick="requestPassword()">Entrar</button>
+        <input type="text" id="username" class="input-box" placeholder="Nome de usuário" required>
+        <button class="button" onclick="login()">Entrar</button>
     </div>
-
-    <!-- Tela Principal (Feed de Postagens) -->
     <div class="container hidden" id="mainApp">
         <h2>Feed</h2>
         <textarea id="postContent" placeholder="O que você está pensando?"></textarea>
         <button class="button" onclick="postar()">Postar</button>
-        <div id="feed" class="feed"></div>
-
-        <!-- Botão para abrir a sidebar -->
-        <button class="open-sidebar-btn" onclick="toggleSidebar()">Abrir Notificações</button>
+        <div id="feed"></div>
     </div>
-
-    <!-- Sidebar (Notificações) -->
-    <div id="sidebar">
-        <h3>Notificações</h3>
-        <ul id="notificationList"></ul>
-        <button onclick="toggleSidebar()">Fechar</button>
-    </div>
-
-    <!-- Overlay para esconder o conteúdo principal quando a sidebar estiver aberta -->
-    <div id="overlay" onclick="toggleSidebar()"></div>
-
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
-        import { getDatabase, ref, set, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBM_NCmVeM93l8vv9iGbUnFIyIBU0_a2zs",
-            authDomain: "escolarelatosx-b25e2.firebaseapp.com",
-            databaseURL: "https://escolarelatosx-b25e2-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "escolarelatosx-b25e2",
-            storageBucket: "escolarelatosx-b25e2.firebasestorage.app",
-            messagingSenderId: "474818683762",
-            appId: "1:474818683762:web:137cc278602db0218073eb",
-            measurementId: "G-MFDKLX3TV6"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-
-        // Função de login
-        function requestPassword() {
-            let username = document.getElementById("username").value;
-            if (username) {
-                localStorage.setItem("username", username);
-                document.getElementById("loginBox").classList.add("hidden");
-                document.getElementById("mainApp").classList.remove("hidden");
-                carregarPosts();
-            }
-        }
-
-        // Função para postar conteúdo
-        function postar() {
-            let content = document.getElementById("postContent").value;
-            let username = localStorage.getItem("username");
-
-            if (!content) {
-                alert("Escreva algo!");
-                return;
-            }
-
-            // Objeto do post a ser salvo
-            let postData = {
-                username: username,
-                content: content,
-                date: new Date().toISOString(),
-                likes: 0,
-                replies: []
-            };
-
-            // Salva o post no Firebase
-            salvarPostNoFirebase(postData);
-        }
-
-        // Função para salvar o post no Firebase
-        function salvarPostNoFirebase(postData) {
-            let postRef = push(ref(database, 'posts'));
-            set(postRef, postData).then(() => {
-                carregarPosts(); // Recarrega os posts após salvar
-            }).catch((error) => {
-                console.error("Erro ao salvar post:", error);
-            });
-        }
-
-        // Função para carregar posts do Firebase
-        function carregarPosts() {
-            const postsRef = ref(database, 'posts');
-
-            onChildAdded(postsRef, (data) => {
-                let postData = data.val();
-                let postElement = criarPost(postData.content, postData.username, data.key);
-                document.getElementById("feed").prepend(postElement);
-            });
-        }
-
-        // Função para criar a estrutura do post no HTML
-        function criarPost(content, username, postId) {
-            let postElement = document.createElement("div");
-            postElement.classList.add("post");
-            postElement.id = postId;
-
-            let postText = document.createElement("p");
-            postText.innerHTML = `<strong>${username}:</strong> ${content}`;
-
-            let actions = document.createElement("div");
-            actions.classList.add("actions");
-
-            let likeBtn = document.createElement("button");
-            likeBtn.innerHTML = "♥︎ Curtir <span class='like-count'>0</span>";
-            likeBtn.classList.add("like-btn");
-            likeBtn.onclick = function () {
-                let countSpan = likeBtn.querySelector(".like-count");
-                let count = parseInt(countSpan.innerText);
-                if (likeBtn.classList.contains("liked")) {
-                    count--;
-                } else {
-                    count++;
-                }
-                countSpan.innerText = count;
-                likeBtn.classList.toggle("liked");
-            };
-
-            let replyBtn = document.createElement("button");
-            replyBtn.innerHTML = "💬 Responder";
-            replyBtn.classList.add("reply-btn");
-            replyBtn.onclick = function () { responder(postElement, username, postId); };
-
-            actions.appendChild(likeBtn);
-            actions.appendChild(replyBtn);
-
-            postElement.appendChild(postText);
-            postElement.appendChild(actions);
-
-            let replyContainer = document.createElement("div");
-            replyContainer.classList.add("replies");
-            postElement.appendChild(replyContainer);
-
-            return postElement;
-        }
-
-        // Função para adicionar resposta ao post
-        function responder(postElement, username, postId) {
-            let replyContent = prompt("Digite sua resposta:");
-
-            if (replyContent) {
-                let replyElement = document.createElement("div");
-                replyElement.classList.add("reply");
-                replyElement.innerHTML = `<strong>${username}:</strong> ${replyContent}`;
-
-                postElement.querySelector(".replies").appendChild(replyElement);
-
-                // Salva a resposta no Firebase
-                let repliesRef = ref(database, "posts/" + postId + "/replies");
-                push(repliesRef, {
-                    username: username,
-                    content: replyContent
-                });
-            }
-        }
-
-        // Função para abrir/fechar a sidebar
-        function toggleSidebar() {
-            const sidebar = document.getElementById("sidebar");
-            const overlay = document.getElementById("overlay");
-
-            sidebar.classList.toggle("open");
-            overlay.classList.toggle("open");
-        }
-    </script>
 </body>
 </html>
